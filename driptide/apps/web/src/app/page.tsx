@@ -1,6 +1,7 @@
 ﻿import type { Metadata } from 'next';
 import Link from 'next/link';
 import { HomeFeaturedProducts } from '@/components/home/HomeFeaturedProducts';
+import { HomeCategoryFocus } from '@/components/home/HomeCategoryFocus';
 import { HomeCategoryCarousel } from '@/components/home/HomeCategoryCarousel';
 import { RevealSections } from '@/components/home/RevealSections';
 import { CampaignFilm } from '@/components/home/CampaignFilm';
@@ -10,22 +11,6 @@ export const metadata: Metadata = {
   title: 'Driptide â€” New Season',
   description: 'Shop the latest Driptide styles, essentials, and new season edits.',
 };
-
-const categories = [
-  { name: 'T-shirts & tops', image: 'https://outfitters.com.pk/cdn/shop/files/T_shirts_6314b1fd-2230-4dcb-8281-a2187f998bcc.jpg?v=1790321039&width=700', href: '/category/t-shirts-tops' },
-  { name: 'Polos', image: 'https://outfitters.com.pk/cdn/shop/files/F1781106204-1.jpg?v=1791445296&width=700', href: '/category/polos' },
-  { name: 'Shirts & shackets', image: 'https://outfitters.com.pk/cdn/shop/files/F1034103816.jpg?v=1785303610&width=700', href: '/category/shirts' },
-  { name: 'Hoodies & sweats', image: 'https://outfitters.com.pk/cdn/shop/files/Sweatshirts_Web.jpg?v=1790321766&width=700', href: '/category/hoodies-sweats' },
-  { name: 'Trousers & denim', image: 'https://outfitters.com.pk/cdn/shop/files/Denim_107b72c8-518d-4227-b450-110df2eb2207.jpg?v=1790321131&width=700', href: '/category/trousers-denim' },
-  { name: 'Shorts', image: 'https://outfitters.com.pk/cdn/shop/files/F0183110903LOWER3.jpg?v=1791445191&width=700', href: '/category/shorts' },
-  { name: 'Activewear', image: 'https://outfitters.com.pk/cdn/shop/files/F0292125119-1.jpg?v=1789629335&width=700', href: '/category/activewear' },
-  { name: 'Sweaters', image: 'https://outfitters.com.pk/cdn/shop/files/F0183102901_2.jpg?v=1790570831&width=700', href: '/category/sweaters' },
-  { name: 'Outerwear', image: 'https://outfitters.com.pk/cdn/shop/files/Outwears.jpg?v=1790321392&width=700', href: '/category/outerwear' },
-  { name: 'Footwear', image: 'https://outfitters.com.pk/cdn/shop/files/F0393112113_11.jpg?v=1775560116&width=700', href: '/category/footwear' },
-  { name: 'Fragrances', image: 'https://outfitters.com.pk/cdn/shop/files/F0102124998_3_copy.jpg?v=1755843658&width=700', href: '/category/fragrances' },
-  { name: 'Accessories', image: 'https://outfitters.com.pk/cdn/shop/files/menu_tile_men_2420934a-0943-458a-991a-7cbb3215983f.jpg?v=1790943560&width=700', href: '/category/accessories' },
-  { name: 'Sale', image: 'https://outfitters.com.pk/cdn/shop/files/Men_Web_0cb72726-eac6-417c-a086-d902db00cc28.jpg?v=1792147448&width=700', href: '/category/sale' },
-];
 
 const edits = [
   {
@@ -37,12 +22,28 @@ const edits = [
   },
   {
     eyebrow: 'Shop the mood',
-    title: 'Dress for the\nmood youâ€™re in.',
-    description: 'Explore curated looks made for every kind of day.',
+    title: 'Dress for the\nmood you’re in.',
     image: 'https://outfitters.com.pk/cdn/shop/files/M_Off-Duty_Web.png?v=1790165853&width=1200',
     mobile: 'https://outfitters.com.pk/cdn/shop/files/M_Off-Duty_Mobile.png?v=1790165860&width=800',
     href: '/shop',
   },
+];
+
+const categories = [
+  { name: 'T-shirts & tops', image: 'https://outfitters.com.pk/cdn/shop/files/T_shirts_6314b1fd-2230-4dcb-8281-a2187f998bcc.jpg?v=1790321039&width=700', href: '/category/t-shirts-tops' },
+  { name: 'Polos', image: 'https://outfitters.com.pk/cdn/shop/files/F1781106204-1.jpg?v=1791445296&width=700', href: '/category/polos' },
+  { name: 'Shirts & shackets', image: 'https://outfitters.com.pk/cdn/shop/files/F1034103816.jpg?v=1785303610&width=700', href: '/category/shirts' },
+  { name: 'Activewear', image: 'https://outfitters.com.pk/cdn/shop/files/F0292125119-1.jpg?v=1789629335&width=700', href: '/category/activewear' },
+  { name: 'Denim', image: 'https://outfitters.com.pk/cdn/shop/files/Denim_107b72c8-518d-4227-b450-110df2eb2207.jpg?v=1790321131&width=700', href: '/category/trousers-denim' },
+  { name: 'Trousers', image: 'https://outfitters.com.pk/cdn/shop/files/Trousers_Web_64f79159-df88-4a1e-a88a-e9c92aec46e4.jpg?v=1790321842&width=700', href: '/category/trousers-denim' },
+  { name: 'Hoodies & sweats', image: 'https://outfitters.com.pk/cdn/shop/files/Sweatshirts_Web.jpg?v=1790321766&width=700', href: '/category/hoodies-sweats' },
+  { name: 'Shorts', image: 'https://outfitters.com.pk/cdn/shop/files/F0183110903LOWER3.jpg?v=1791445191&width=700', href: '/category/shorts' },
+  { name: 'Sweaters', image: 'https://outfitters.com.pk/cdn/shop/files/F0183102901_2.jpg?v=1790570831&width=700', href: '/category/sweaters' },
+  { name: 'Outerwear', image: 'https://outfitters.com.pk/cdn/shop/files/Outwears.jpg?v=1790321392&width=700', href: '/category/outerwear' },
+  { name: 'Footwear', image: 'https://outfitters.com.pk/cdn/shop/files/F0393112113_11.jpg?v=1775560116&width=700', href: '/category/footwear' },
+  { name: 'Fragrances', image: 'https://outfitters.com.pk/cdn/shop/files/F0102124998_3_copy.jpg?v=1755843658&width=700', href: '/category/fragrances' },
+  { name: 'Accessories', image: 'https://outfitters.com.pk/cdn/shop/files/menu_tile_men_2420934a-0943-458a-991a-7cbb3215983f.jpg?v=1790943560&width=700', href: '/category/accessories' },
+  { name: 'Sale', image: 'https://outfitters.com.pk/cdn/shop/files/Men_Web_0cb72726-eac6-417c-a086-d902db00cc28.jpg?v=1792147448&width=700', href: '/category/sale' },
 ];
 
 const communityFilms = [
@@ -84,13 +85,10 @@ export default function HomePage() {
     <RevealSections>
       <HomeHeroCarousel slides={heroSlides} />
       <section className="home-categories" data-reveal aria-labelledby="home-categories-title">
-        <div className="home-section-heading">
-          <div><span>THE DRIPTIDE EDIT</span><h2 id="home-categories-title">Shop by categories</h2></div>
-          <Link href="/shop">View all <span aria-hidden="true">â†—</span></Link>
-        </div>
+        <h2 id="home-categories-title" className="sr-only">Shop by categories</h2>
         <HomeCategoryCarousel categories={categories} />
       </section>
-
+      <HomeCategoryFocus />
 
       <HomeFeaturedProducts />
 
@@ -101,13 +99,12 @@ export default function HomePage() {
               <source media="(max-width: 749px)" srcSet={edit.mobile} />
               <img src={edit.image} alt={edit.eyebrow} loading="lazy" />
             </picture>
-            <span className="home-editorial__copy"><small>{edit.eyebrow}</small><strong>{edit.title}</strong>{edit.description && <span>{edit.description}</span>}<i>Explore the edit&nbsp; â†—</i></span>
-            <span className="home-editorial__number">0{index + 1}</span>
+            <span className="home-editorial__copy"><strong>{edit.title}</strong></span>
           </Link>
         ))}
       </section>
 
-      <HomeFeaturedProducts title="Trending now" eyebrow="MOST WANTED" newArrivalsOnly={false} />
+      <HomeFeaturedProducts title="Trending now" eyebrow="MOST WANTED" newArrivalsOnly={false} productLimit={5} />
 
       <section className="home-community-films" data-reveal aria-label="Campaign films">
         <div className="home-section-heading"><div><span>COMMUNITY</span><h2>Explore the latest looks</h2></div><Link href="/shop">Shop the edit <span aria-hidden="true">â†—</span></Link></div>

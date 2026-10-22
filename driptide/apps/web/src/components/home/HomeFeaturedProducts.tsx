@@ -6,7 +6,7 @@ import { api } from '@/lib/api';
 import { CampaignProductCard } from '@/components/campaign/CampaignProductCard';
 import Link from 'next/link';
 
-export function HomeFeaturedProducts({ title = 'New arrivals', eyebrow = 'JUST LANDED', newArrivalsOnly = true }: { title?: string; eyebrow?: string; newArrivalsOnly?: boolean }) {
+export function HomeFeaturedProducts({ title = 'New arrivals', eyebrow = 'JUST LANDED', newArrivalsOnly = true, productLimit = 4 }: { title?: string; eyebrow?: string; newArrivalsOnly?: boolean; productLimit?: number }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [failed, setFailed] = useState(false);
   const headingId = `home-products-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
@@ -14,10 +14,23 @@ export function HomeFeaturedProducts({ title = 'New arrivals', eyebrow = 'JUST L
   useEffect(() => {
     let active = true;
     api.getProducts({ newArrival: newArrivalsOnly ? true : undefined, featured: newArrivalsOnly ? undefined : true, sort: 'featured' })
-      .then((items) => { if (active) setProducts(items.slice(0, 4)); })
+      .then((items) => {
+        if (!active) return;
+
+        const collection = newArrivalsOnly ? items : items.filter((product) => !product.isNewArrival);
+        const seenImages = new Set<string>();
+        const distinctProducts = collection.filter((product) => {
+          const imageUrl = product.images.find((image) => image.isPrimary)?.url ?? product.images[0]?.url;
+          if (!imageUrl || seenImages.has(imageUrl)) return false;
+          seenImages.add(imageUrl);
+          return true;
+        });
+
+        setProducts(distinctProducts.slice(0, productLimit));
+      })
       .catch(() => { if (active) setFailed(true); });
     return () => { active = false; };
-  }, [newArrivalsOnly]);
+  }, [newArrivalsOnly, productLimit]);
 
   return (
     <section className="home-products" data-reveal aria-labelledby={headingId}>

@@ -466,6 +466,30 @@ header.sticky { border-color: #eee; }
   .home-page--reveal-ready [data-reveal], .home-products__grid > *, .home-hero picture img, .header-mega-menu, .collection-filter-sheet > section { opacity: 1 !important; transform: none !important; animation: none !important; transition: none !important; }
 }
 
+/* Edge-to-edge category tiles directly below the hero. */
+.home-categories { padding: 12px 0 76px; }
+.home-categories__arrows { display: none; }
+.home-category-grid { gap: 12px; padding: 0; }
+.home-category { position: relative; flex-basis: calc((100% - 60px) / 6); aspect-ratio: .82; overflow: hidden; color: #fff; transition: opacity .3s ease; }
+.home-category img { position: absolute; inset: 0; width: 100%; height: 100%; aspect-ratio: auto; object-fit: cover; transition: transform .55s ease, filter .3s ease; }
+.home-category::after { content: ""; position: absolute; inset: 0; background: rgb(0 0 0 / 13%); transition: background .3s ease; }
+.home-category > span { position: absolute; z-index: 1; inset: 0; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 12px; color: #fff; font-size: clamp(12px, 1vw, 18px); font-weight: 650; line-height: 1.1; text-align: center; text-transform: uppercase; letter-spacing: .01em; }
+.home-category > span b { display: none; }
+.home-category:hover img { opacity: 1; transform: scale(1.025); }
+.home-category:hover::after { background: rgb(0 0 0 / 25%); }
+.home-category.is-dimmed { opacity: .38; }
+.home-category:focus-visible { outline: 2px solid #111; outline-offset: -3px; }
+@media (max-width: 749px) {
+  .home-categories { padding: 8px 0 48px; }
+  .home-category-grid { gap: 7px; }
+  .home-category { flex-basis: 40%; }
+  .home-category > span { font-size: 12px; }
+  .home-category-focus { padding-top: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-category, .home-category img, .home-category::after { transition: none; }
+}
+
 /* Fullscreen campaign landing header and hero, matching the reference composition. */
 body:has(.home-page) header.sticky {
   position: absolute;
@@ -492,6 +516,9 @@ body:has(.home-page) .header-search-trigger { display: flex; align-items: center
 body:has(.home-page) .header-search-panel { color: #111; }
 body:has(.home-page) .home-hero { height: 100vh; height: 100svh; min-height: 0; }
 body:has(.home-page) .home-hero { position: sticky; top: 0; z-index: 0; }
+/* Keep the sticky hero behind the scrolling sections without exposing it during paint. */
+body:has(.home-page) .home-hero { isolation: isolate; backface-visibility: hidden; }
+body:has(.home-page) .home-page { position: relative; isolation: isolate; }
 body:has(.home-page) .home-page > section:not(.home-hero) { position: relative; z-index: 1; background: #fff; }
 body:has(.home-page) .home-hero__video { object-position: center center; }
 body:has(.home-page) .home-hero::after { background: rgb(0 0 0 / 10%); }
@@ -503,6 +530,21 @@ body:has(.home-page) .home-hero__dots button[aria-current="true"] { width: 13px;
 body:has(.home-page) .home-hero__dots button[aria-current="true"] { background: #fff; }
 body:has(.home-page) .home-hero--carousel { cursor: default; }
 .nav-drawer { animation: home-menu-in .22s ease both; }
+.nav-drawer { width: 52vw; min-width: 680px; max-width: 1080px; right: auto; box-shadow: 1px 0 0 #aaa; }
+.nav-drawer::after { content: ""; position: fixed; inset: 0 0 0 52vw; z-index: -1; background: rgb(255 255 255 / 8%); backdrop-filter: blur(7px); pointer-events: none; }
+.nav-drawer__top { grid-template-columns: 42px 220px minmax(0, 1fr); gap: 38px; }
+.nav-drawer__content { grid-template-columns: minmax(0, 1fr) minmax(170px, 22%); gap: clamp(22px, 3vw, 48px); padding-left: clamp(32px, 5.5vw, 112px); padding-right: clamp(18px, 2vw, 40px); }
+@media (max-width: 1100px) and (min-width: 750px) {
+  .nav-drawer { width: 68vw; min-width: 0; }
+  .nav-drawer::after { left: 68vw; }
+  .nav-drawer__top { grid-template-columns: 32px 150px minmax(0, 1fr); gap: 22px; padding-inline: 26px; }
+  .nav-drawer__wordmark { font-size: 34px; }
+  .nav-drawer__content { padding-left: 40px; }
+}
+@media (max-width: 749px) {
+  .nav-drawer { width: 100%; min-width: 0; max-width: none; }
+  .nav-drawer::after { display: none; }
+}
 .nav-drawer__top { position: sticky; top: 0; z-index: 2; min-height: 92px; display: grid; grid-template-columns: 42px 220px minmax(0, 1fr); align-items: center; gap: 38px; padding: 0 clamp(24px, 4vw, 72px); background: #fff; border-top: 3px solid #151515; border-bottom: 1px solid #ededed; }
 .nav-drawer__close { width: 36px; height: 36px; display: grid; place-items: center; }
 .nav-drawer__wordmark { width: fit-content; color: #111; font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif; font-size: 42px; letter-spacing: -.035em; line-height: .9; }
@@ -558,4 +600,41 @@ body:has(.home-page) .home-hero--carousel { cursor: default; }
   .nav-drawer__tiles img { aspect-ratio: .78; margin-bottom: 9px; }
   .nav-drawer__footer { flex-direction: column; align-items: flex-start; gap: 14px; padding: 18px 20px 24px; font-size: 10px; }
   .nav-drawer__footer nav { flex-wrap: wrap; gap: 12px 20px; }
+}
+
+/* Full-bleed feature image with a category selector and swipeable product rail. */
+.home-category-focus { display: grid; grid-template-columns: 34% minmax(0, 1fr); align-items: stretch; gap: clamp(20px, 1.55vw, 32px); padding: 26px 0 0; overflow: hidden; background: #fff; }
+.home-category-focus__feature { display: block; min-width: 0; aspect-ratio: .75; overflow: hidden; background: #edf0f1; }
+.home-category-focus__feature img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+.home-category-focus__content { min-width: 0; padding-top: 0; overflow: hidden; }
+.home-category-focus__header { margin: 0 0 clamp(28px, 2.5vw, 50px); }
+.home-category-focus__header h2 { margin: 0 0 30px; font-size: clamp(30px, 2.15vw, 44px); line-height: 1.1; font-weight: 650; letter-spacing: -.035em; }
+.home-category-focus__tabs { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.home-category-focus__tabs button { padding: 0; border: 0; background: transparent; color: #555; cursor: pointer; font-size: clamp(20px, 1.35vw, 28px); line-height: 1.28; text-align: left; }
+.home-category-focus__tabs button.is-active { color: #111; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+.home-category-focus__tabs button:focus-visible { outline: 2px solid #111; outline-offset: 3px; }
+.home-category-focus__rail { display: flex; gap: 14px; overflow-x: auto; overscroll-behavior-inline: contain; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 0 20px 8px 0; }
+.home-category-focus__rail::-webkit-scrollbar { display: none; }
+.home-focus-product { display: flex; flex: 0 0 28.6%; min-width: 0; flex-direction: column; align-items: flex-start; scroll-snap-align: start; color: #111; }
+.home-focus-product__image { display: block; width: 100%; aspect-ratio: .67; margin-bottom: 15px; overflow: hidden; background: #e9eded; }
+.home-focus-product__image img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .45s ease; }
+.home-focus-product:hover .home-focus-product__image img { transform: scale(1.025); }
+.home-focus-product__name { font-size: clamp(12px, .83vw, 17px); line-height: 1.35; text-transform: uppercase; }
+.home-focus-product__fit { margin-top: 4px; color: #777; font-size: clamp(9px, .58vw, 12px); letter-spacing: .1em; text-transform: uppercase; }
+.home-focus-product__price { margin-top: 4px; font-size: clamp(13px, .83vw, 17px); line-height: 1.2; }
+.home-focus-product__swatch { display: block; width: 17px; height: 17px; margin-top: 12px; border: 1px solid rgb(0 0 0 / 12%); }
+@media (max-width: 749px) {
+  .home-category-focus { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-top: 12px; }
+  .home-category-focus__feature { width: 100%; aspect-ratio: .94; }
+  .home-category-focus__feature img { object-position: center 24%; }
+  .home-category-focus__content { padding: 0 14px; }
+  .home-category-focus__header { margin-bottom: 24px; }
+  .home-category-focus__header h2 { margin-bottom: 16px; font-size: 27px; }
+  .home-category-focus__tabs { flex-direction: row; gap: 18px; overflow-x: auto; white-space: nowrap; }
+  .home-category-focus__tabs button { font-size: 14px; }
+  .home-category-focus__rail { gap: 8px; margin-right: -14px; padding-right: 14px; }
+  .home-focus-product { flex-basis: 72%; }
+  .home-focus-product__name { font-size: 12px; }
+  .home-focus-product__fit { font-size: 9px; }
+  .home-focus-product__price { font-size: 13px; }
 }
