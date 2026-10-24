@@ -51,7 +51,7 @@ function OrderConfirmedContent({
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-20 space-y-10">
+    <div className="store-info-page store-info-page--confirmation max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-20 space-y-10">
       {/* Success Banner */}
       <div className="text-center space-y-3 pb-8 border-b border-neutral-200 dark:border-neutral-800">
         <div className="w-12 h-12 mx-auto rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center text-emerald-600 dark:text-emerald-400">

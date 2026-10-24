@@ -16,6 +16,7 @@ import {
   AdjustInventoryInput,
   InventoryMovementType,
   InventoryMovement,
+  Coupon,
 } from '@driptide/contracts';
 
 @Injectable()
@@ -113,6 +114,14 @@ export class AdminService {
     order.trackingNumber = trackingNumber;
     order.updatedAt = new Date().toISOString();
 
+    // Persist to Supabase
+    this.db.updateOrderInDb(orderId, {
+      status: order.status,
+      fulfillment_status: order.fulfillmentStatus,
+      courier,
+      tracking_number: trackingNumber,
+    }).catch(() => {});
+
     return order;
   }
 
@@ -130,6 +139,13 @@ export class AdminService {
       order.notes = notes;
     }
     order.updatedAt = new Date().toISOString();
+
+    // Persist to Supabase
+    this.db.updateOrderInDb(orderId, {
+      status,
+      fulfillment_status: order.fulfillmentStatus,
+      notes: order.notes,
+    }).catch(() => {});
 
     return order;
   }
@@ -261,5 +277,36 @@ export class AdminService {
 
   async getInventoryMovements(): Promise<InventoryMovement[]> {
     return this.db.inventoryMovements.slice(-50).reverse();
+  }
+
+  async getCoupons(): Promise<Coupon[]> {
+    return this.db.coupons;
+  }
+
+  async createCoupon(input: Partial<Coupon>): Promise<Coupon> {
+    const coupon: Coupon = {
+      id: `cp-${Date.now()}`,
+      code: input.code!.toUpperCase().trim(),
+      discountType: input.discountType || 'percentage',
+      discountValue: input.discountValue || 10,
+      minSpendMinor: input.minSpendMinor,
+      maxDiscountMinor: input.maxDiscountMinor,
+      usageLimit: input.usageLimit,
+      usageCount: 0,
+      isActive: input.isActive ?? true,
+    };
+    this.db.coupons.push(coupon);
+    // Persist to Supabase
+    this.db.saveCouponToDb(coupon).catch(() => {});
+    return coupon;
+  }
+
+  async toggleCoupon(id: string): Promise<Coupon> {
+    const coupon = this.db.coupons.find((c) => c.id === id);
+    if (!coupon) throw new NotFoundException('Coupon not found');
+    coupon.isActive = !coupon.isActive;
+    // Persist to Supabase
+    this.db.updateCouponInDb(id, { is_active: coupon.isActive }).catch(() => {});
+    return coupon;
   }
 }

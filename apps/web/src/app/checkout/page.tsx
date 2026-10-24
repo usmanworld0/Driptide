@@ -40,7 +40,7 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="max-w-md mx-auto py-24 px-4 text-center space-y-4">
+      <div className="driptide-checkout max-w-md mx-auto py-24 px-4 text-center space-y-4">
         <h1 className="text-xl font-bold uppercase tracking-widest">Your Bag is Empty</h1>
         <p className="text-xs text-neutral-500 uppercase tracking-wider">
           Please add items to your shopping bag before proceeding to checkout.
@@ -103,7 +103,7 @@ export default function CheckoutPage() {
       );
 
       await refreshCart();
-      router.push(`/order-confirmed/${order.id}`);
+      router.push(`/order-confirmed/${order.orderNumber}`);
     } catch (err: any) {
       setErrorMessage(err.message || 'Failed to process order. Please verify your details.');
     } finally {
@@ -112,7 +112,7 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+    <div className="driptide-checkout max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
       <div className="flex items-center space-x-2 text-xs font-bold tracking-[0.2em] uppercase text-neutral-400 mb-6">
         <Lock className="w-3.5 h-3.5 text-emerald-500" />
         <span>Secure 256-Bit Encrypted Checkout</span>

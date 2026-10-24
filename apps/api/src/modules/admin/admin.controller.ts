@@ -21,6 +21,7 @@ import {
   UpdateProductInput,
   AdjustInventoryInput,
   ApiResponse,
+  Coupon,
 } from '@driptide/contracts';
 
 @Controller('admin')
@@ -93,5 +94,23 @@ export class AdminController {
   async getInventoryMovements(): Promise<ApiResponse> {
     const movements = await this.adminService.getInventoryMovements();
     return { success: true, data: movements };
+  }
+
+  @Get('coupons')
+  async getCoupons(): Promise<ApiResponse> {
+    const coupons = await this.adminService.getCoupons();
+    return { success: true, data: coupons };
+  }
+
+  @Post('coupons')
+  async createCoupon(@Body() input: Partial<Coupon>): Promise<ApiResponse> {
+    const coupon = await this.adminService.createCoupon(input);
+    return { success: true, data: coupon, message: 'Coupon created successfully' };
+  }
+
+  @Put('coupons/:id/toggle')
+  async toggleCoupon(@Param('id') id: string): Promise<ApiResponse> {
+    const coupon = await this.adminService.toggleCoupon(id);
+    return { success: true, data: coupon, message: 'Coupon status updated' };
   }
 }

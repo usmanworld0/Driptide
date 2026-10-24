@@ -16,4 +16,11 @@ export const configuration = () => ({
     standardShippingMinor: 1500, // $15.00
     expressShippingMinor: 3000, // $30.00
   },
+  email: {
+    host: process.env.SMTP_HOST || '',
+    port: parseInt(process.env.SMTP_PORT || '587', 10),
+    user: process.env.SMTP_USER || '',
+    pass: process.env.SMTP_PASS || '',
+    from: `${process.env.SMTP_FROM_NAME || 'Driptide'} <${process.env.SMTP_FROM_EMAIL || 'orders@driptide.com'}>`,
+  },
 });

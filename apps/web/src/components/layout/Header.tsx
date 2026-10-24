@@ -3,15 +3,17 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { User, ShoppingBag, X, Menu, Search, ArrowUpRight } from 'lucide-react';
+import { User, X, Menu, Search, ArrowUpRight } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
 export function Header() {
   const { cart, openCart } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [market, setMarket] = useState('AL - USD ($)');
 
   const itemCount = cart?.itemCount || 0;
+  const marketFlag = market.startsWith('PK') ? '🇵🇰' : market.startsWith('GB') ? '🇬🇧' : market.startsWith('US') ? '🇺🇸' : '🇦🇱';
 
   return (
     <header className="sticky top-0 z-40 bg-white transition-colors border-b border-neutral-200">
@@ -31,25 +33,28 @@ export function Header() {
             </button>
 
             <Link href="/" className="header-wordmark-wrap flex items-center justify-center" aria-label="Driptide Home">
-              <span className="header-wordmark">Driptide</span>
+              <span className="header-wordmark">DRIPTIDE</span>
             </Link>
           </div>
 
-          <nav className="header-primary-nav flex items-center text-[11px] uppercase tracking-[0.06em] text-[#111111]" aria-label="Shop departments">
-            <Link href="/shop" aria-current="page">Men</Link>
-            <Link href="/shop">Women</Link>
-            <Link href="/shop">Juniors</Link>
+          <nav className="header-primary-nav flex items-center text-[11px] uppercase tracking-[0.06em] text-[#111111]" aria-label="Main navigation">
+            <Link href="/products">Shop</Link>
+            <Link href="/collections">Collections</Link>
+            <Link href="/story">Blog</Link>
+            <Link href="/about">About us</Link>
+            <Link href="/contact">Contact us</Link>
           </nav>
 
           <div className="header-utilities flex items-center">
+            <label className="header-market"><span aria-hidden="true">{marketFlag}</span><select aria-label="Country and currency" value={market} onChange={(event) => setMarket(event.target.value)}><option>AL - USD ($)</option><option>PK - PKR (Rs)</option><option>US - USD ($)</option><option>GB - GBP (£)</option></select></label>
             <button type="button" onClick={() => setSearchOpen((open) => !open)} className="header-search-trigger hover:opacity-70" aria-label="Search the shop" aria-expanded={searchOpen}><Search className="w-[18px] h-[18px]" /><span>Search</span></button>
             <Link href="/account" className="hover:opacity-70" aria-label="Customer Account"><User className="w-[20px] h-[20px] stroke-[1.6]" /></Link>
             <button
               onClick={openCart}
-              className="relative hover:opacity-70 cursor-pointer focus-visible:outline focus-visible:outline-2"
-              aria-label={`Shopping Bag${itemCount ? `, ${itemCount} items` : ''}`}
+              className="header-cart-link relative hover:opacity-70 cursor-pointer focus-visible:outline focus-visible:outline-2"
+              aria-label={`Cart${itemCount ? `, ${itemCount} items` : ''}`}
             >
-              <ShoppingBag className="w-[20px] h-[20px] stroke-[1.6]" />
+              <span>[&nbsp; Cart&nbsp; {itemCount}&nbsp; ]</span>
               {itemCount > 0 && <span className="absolute -top-2 -right-2 min-w-4 h-4 px-1 bg-white text-black rounded-full text-[9px] flex items-center justify-center">{itemCount}</span>}
             </button>
           </div>
@@ -69,11 +74,13 @@ export function Header() {
         <div className="nav-drawer fixed inset-0 z-[60] overflow-y-auto bg-white text-[#111]" role="dialog" aria-modal="true" aria-label="Shop navigation">
           <div className="nav-drawer__top">
             <button type="button" onClick={() => setMobileMenuOpen(false)} className="nav-drawer__close" aria-label="Close navigation"><X size={28} strokeWidth={1.4} /></button>
-            <Link href="/" className="nav-drawer__wordmark" onClick={() => setMobileMenuOpen(false)}>Driptide</Link>
-            <nav aria-label="Shop departments" className="nav-drawer__departments">
-              <Link href="/shop" onClick={() => setMobileMenuOpen(false)} aria-current="page">Men</Link>
-              <Link href="/shop" onClick={() => setMobileMenuOpen(false)}>Women</Link>
-              <Link href="/shop" onClick={() => setMobileMenuOpen(false)}>Juniors</Link>
+            <Link href="/" className="nav-drawer__wordmark" onClick={() => setMobileMenuOpen(false)}>DRIPTIDE</Link>
+            <nav aria-label="Main navigation" className="nav-drawer__departments">
+              <Link href="/products" onClick={() => setMobileMenuOpen(false)}>Shop</Link>
+              <Link href="/collections" onClick={() => setMobileMenuOpen(false)}>Collections</Link>
+              <Link href="/story" onClick={() => setMobileMenuOpen(false)}>Blog</Link>
+              <Link href="/about" onClick={() => setMobileMenuOpen(false)}>About</Link>
+              <Link href="/contact" onClick={() => setMobileMenuOpen(false)}>Contact</Link>
             </nav>
           </div>
 

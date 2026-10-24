@@ -23,7 +23,7 @@ const FAQS = [
 
 export default function FAQPage() {
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 sm:py-24 space-y-12">
+    <div className="store-info-page store-info-page--faq max-w-3xl mx-auto px-4 sm:px-6 py-16 sm:py-24 space-y-12">
       <div className="space-y-3 border-b border-neutral-200 dark:border-neutral-800 pb-8">
         <span className="text-xs font-bold tracking-[0.25em] text-neutral-400 uppercase">
           Help & Information

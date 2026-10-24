@@ -43,8 +43,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       const data = await api.getCart(sessionId);
       setCart(data);
-    } catch (err) {
-      console.error('Failed to load cart:', err);
+    } catch {
+      // The bag can remain empty while the API is starting or unavailable.
+      // Mutating cart actions still surface their request errors to the shopper.
     } finally {
       setIsLoading(false);
     }

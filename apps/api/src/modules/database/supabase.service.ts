@@ -1,10 +1,11 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import {
   Product,
   Category,
   Order,
+  OrderItem,
   Cart,
   Coupon,
   UserProfile,
@@ -74,7 +75,7 @@ function buildAdditionalProducts(): Product[] {
 }
 
 @Injectable()
-export class SupabaseService {
+export class SupabaseService implements OnModuleInit {
   private readonly logger = new Logger(SupabaseService.name);
   public client: SupabaseClient | null = null;
   public isLive = false;
@@ -389,14 +390,15 @@ export class SupabaseService {
 
   constructor(private readonly config: ConfigService) {
     this.products.push(...buildAdditionalProducts());
-    const supabaseUrl = this.config.get<string>('database.supabaseUrl');
-    const supabaseKey = this.config.get<string>('database.supabaseServiceKey');
+    const supabaseUrl = this.config.get<string>('supabase.url');
+    const supabaseKey = this.config.get<string>('supabase.serviceRoleKey');
 
     if (
       supabaseUrl &&
       supabaseKey &&
-      supabaseUrl !== 'https://placeholder.supabase.co' &&
-      !supabaseUrl.includes('placeholder')
+      /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(supabaseUrl) &&
+      !/placeholder|mock/i.test(supabaseUrl) &&
+      !/placeholder|mock/i.test(supabaseKey)
     ) {
       try {
         this.client = createClient(supabaseUrl, supabaseKey);
@@ -425,10 +427,13 @@ export class SupabaseService {
       };
     }
 
-    if (token.includes('admin')) {
+    if (process.env.NODE_ENV !== 'production' && token === 'admin-dev-token') {
       return this.users.find((u) => u.role === UserRole.ADMIN) || null;
     }
-    return this.users.find((u) => u.role === UserRole.CUSTOMER) || null;
+    if (process.env.NODE_ENV !== 'production' && token === 'customer-dev-token') {
+      return this.users.find((u) => u.role === UserRole.CUSTOMER) || null;
+    }
+    return null;
   }
 
   async reserveAndDeductInventory(
@@ -499,5 +504,206 @@ export class SupabaseService {
         }
       }
     }
+  }
+
+  // ─── Supabase Persistence (active when isLive = true) ────────────────────
+
+  /**
+   * Called after module initialisation — bootstraps orders and coupons from
+   * Supabase so the in-memory cache is warm on server start.
+   */
+  async onModuleInit(): Promise<void> {
+    if (!this.isLive || !this.client) return;
+
+    try {
+      // Load persisted orders
+      const { data: ordersData, error: ordersError } = await this.client
+        .from('orders')
+        .select('*, order_items(*)')
+        .order('created_at', { ascending: false })
+        .limit(500);
+
+      if (!ordersError && ordersData) {
+        this.orders = ordersData.map((row: any) => this.mapOrderRow(row));
+        this.logger.log(`Loaded ${this.orders.length} orders from Supabase`);
+      }
+
+      // Load persisted coupons
+      const { data: couponsData, error: couponsError } = await this.client
+        .from('coupons')
+        .select('*');
+
+      if (!couponsError && couponsData && couponsData.length > 0) {
+        this.coupons = couponsData.map((row: any) => this.mapCouponRow(row));
+        this.logger.log(`Loaded ${this.coupons.length} coupons from Supabase`);
+      }
+    } catch (err: any) {
+      this.logger.warn(`onModuleInit Supabase bootstrap failed: ${err.message}`);
+    }
+  }
+
+  /** Persists a newly created order (and its items) to Supabase. */
+  async saveOrderToDb(order: Order): Promise<void> {
+    if (!this.isLive || !this.client) return;
+
+    try {
+      const { error: orderError } = await this.client.from('orders').insert({
+        id: order.id,
+        order_number: order.orderNumber,
+        user_id: order.userId || null,
+        guest_email: order.guestEmail || null,
+        customer_name: order.customerName,
+        customer_email: order.customerEmail,
+        customer_phone: order.customerPhone || null,
+        shipping_address: order.shippingAddress,
+        billing_address: order.billingAddress || null,
+        status: order.status,
+        payment_status: order.paymentStatus,
+        fulfillment_status: order.fulfillmentStatus,
+        currency: order.currency,
+        subtotal_minor: order.subtotalMinor,
+        shipping_minor: order.shippingMinor,
+        tax_minor: order.taxMinor,
+        discount_minor: order.discountMinor,
+        total_minor: order.totalMinor,
+        coupon_code: order.couponCode || null,
+        payment_method: order.paymentMethod,
+        tracking_number: order.trackingNumber || null,
+        courier: order.courier || null,
+        notes: order.notes || null,
+        created_at: order.createdAt,
+        updated_at: order.updatedAt,
+      });
+
+      if (orderError) {
+        this.logger.error(`Failed to persist order ${order.orderNumber}: ${orderError.message}`);
+        return;
+      }
+
+      // Insert order items
+      const itemRows = order.items.map((item) => ({
+        id: item.id,
+        order_id: item.orderId,
+        product_id: item.productId,
+        variant_id: item.variantId,
+        product_name: item.productName,
+        variant_title: item.variantTitle,
+        sku: item.sku,
+        unit_price_minor: item.unitPriceMinor,
+        quantity: item.quantity,
+        total_price_minor: item.totalPriceMinor,
+        image_url: item.imageUrl || null,
+      }));
+
+      const { error: itemsError } = await this.client.from('order_items').insert(itemRows);
+      if (itemsError) {
+        this.logger.error(`Failed to persist order items for ${order.orderNumber}: ${itemsError.message}`);
+      } else {
+        this.logger.log(`Order ${order.orderNumber} persisted to Supabase`);
+      }
+    } catch (err: any) {
+      this.logger.error(`saveOrderToDb exception: ${err.message}`);
+    }
+  }
+
+  /** Patches an order row in Supabase (status, fulfillment, tracking, etc.). */
+  async updateOrderInDb(orderId: string, patch: Record<string, unknown>): Promise<void> {
+    if (!this.isLive || !this.client) return;
+    const { error } = await this.client
+      .from('orders')
+      .update({ ...patch, updated_at: new Date().toISOString() })
+      .eq('id', orderId);
+    if (error) {
+      this.logger.error(`updateOrderInDb(${orderId}) failed: ${error.message}`);
+    }
+  }
+
+  /** Persists a new coupon to Supabase. */
+  async saveCouponToDb(coupon: Coupon): Promise<void> {
+    if (!this.isLive || !this.client) return;
+    const { error } = await this.client.from('coupons').insert({
+      id: coupon.id,
+      code: coupon.code,
+      discount_type: coupon.discountType,
+      discount_value: coupon.discountValue,
+      min_spend_minor: coupon.minSpendMinor ?? null,
+      max_discount_minor: coupon.maxDiscountMinor ?? null,
+      usage_limit: coupon.usageLimit ?? null,
+      usage_count: coupon.usageCount,
+      is_active: coupon.isActive,
+    });
+    if (error) {
+      this.logger.error(`saveCouponToDb(${coupon.code}) failed: ${error.message}`);
+    }
+  }
+
+  /** Updates a coupon row in Supabase. */
+  async updateCouponInDb(id: string, patch: Record<string, unknown>): Promise<void> {
+    if (!this.isLive || !this.client) return;
+    const { error } = await this.client.from('coupons').update(patch).eq('id', id);
+    if (error) {
+      this.logger.error(`updateCouponInDb(${id}) failed: ${error.message}`);
+    }
+  }
+
+  // ─── Row Mappers ─────────────────────────────────────────────────────────
+
+  private mapOrderRow(row: any): Order {
+    const items: OrderItem[] = (row.order_items || []).map((i: any) => ({
+      id: i.id,
+      orderId: i.order_id,
+      productId: i.product_id,
+      variantId: i.variant_id,
+      productName: i.product_name,
+      variantTitle: i.variant_title,
+      sku: i.sku,
+      unitPriceMinor: i.unit_price_minor,
+      quantity: i.quantity,
+      totalPriceMinor: i.total_price_minor,
+      imageUrl: i.image_url,
+    }));
+
+    return {
+      id: row.id,
+      orderNumber: row.order_number,
+      userId: row.user_id,
+      guestEmail: row.guest_email,
+      customerName: row.customer_name,
+      customerEmail: row.customer_email,
+      customerPhone: row.customer_phone,
+      shippingAddress: row.shipping_address,
+      billingAddress: row.billing_address,
+      status: row.status,
+      paymentStatus: row.payment_status,
+      fulfillmentStatus: row.fulfillment_status,
+      currency: row.currency,
+      subtotalMinor: row.subtotal_minor,
+      shippingMinor: row.shipping_minor,
+      taxMinor: row.tax_minor,
+      discountMinor: row.discount_minor,
+      totalMinor: row.total_minor,
+      couponCode: row.coupon_code,
+      paymentMethod: row.payment_method,
+      trackingNumber: row.tracking_number,
+      courier: row.courier,
+      notes: row.notes,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      items,
+    };
+  }
+
+  private mapCouponRow(row: any): Coupon {
+    return {
+      id: row.id,
+      code: row.code,
+      discountType: row.discount_type,
+      discountValue: row.discount_value,
+      minSpendMinor: row.min_spend_minor,
+      maxDiscountMinor: row.max_discount_minor,
+      usageLimit: row.usage_limit,
+      usageCount: row.usage_count,
+      isActive: row.is_active,
+    };
   }
 }

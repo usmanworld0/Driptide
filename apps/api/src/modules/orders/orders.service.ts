@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { SupabaseService } from '../database/supabase.service';
 import { CartService } from '../cart/cart.service';
+import { EmailService } from '../email/email.service';
 import {
   Order,
   OrderItem,
@@ -24,6 +25,7 @@ export class OrdersService {
   constructor(
     private readonly db: SupabaseService,
     private readonly cartService: CartService,
+    private readonly emailService: EmailService,
   ) {}
 
   async checkout(
@@ -129,6 +131,16 @@ export class OrdersService {
 
     // Save order
     this.db.orders.unshift(order);
+
+    // Persist to Supabase when live credentials are configured
+    this.db.saveOrderToDb(order).catch((err: Error) => {
+      this.logger.error(`Supabase order persist failed for ${order.orderNumber}: ${err.message}`);
+    });
+
+    // Send order confirmation email (non-blocking — failure never stops the order)
+    this.emailService.sendOrderConfirmation(order).catch((err: Error) => {
+      this.logger.error(`Email dispatch failed for ${order.orderNumber}: ${err.message}`);
+    });
 
     // Clear cart
     await this.cartService.clearCart(cartKey);

@@ -1,26 +1,34 @@
 import Link from 'next/link';
-import { NewsletterSignup } from './NewsletterSignup';
-
-const footerGroups = [
-  { title: 'Customer care', links: [['Contact us', '/contact'], ['FAQs', '/faq'], ['Shipping & delivery', '/shipping'], ['Returns & exchanges', '/shipping']] },
-  { title: 'About', links: [['Our story', '/about'], ['Shop all', '/shop'], ['New arrivals', '/shop?newArrival=true']] },
-  { title: 'Your account', links: [['My account', '/account'], ['Order status', '/account'], ['Shopping bag', '/shop']] },
-];
 
 export function Footer() {
   return (
-    <footer className="store-footer">
-      <section className="store-footer__signup">
-        <div><span>THE DRIPTIDE LIST</span><h2>Good things, in your inbox.</h2><p>Be first to hear about new releases and the latest from Driptide.</p></div>
-        <NewsletterSignup />
-      </section>
-      <div className="store-footer__main">
-        <Link className="store-footer__wordmark" href="/" aria-label="Driptide home">DRIPTIDE</Link>
-        <div className="store-footer__groups">
-          {footerGroups.map((group) => <nav key={group.title} aria-label={group.title}><h3>{group.title}</h3>{group.links.map(([label, href]) => <Link key={label} href={href}>{label}</Link>)}</nav>)}
-        </div>
+    <footer className="driptide-footer">
+      <div className="driptide-footer__brand">
+        <Link href="/">DRIPTIDE</Link>
+        <p>Contemporary fashion<br />from London.</p>
       </div>
-      <div className="store-footer__bottom"><span>© 2026 Driptide. All rights reserved.</span><div><Link href="/shipping">Privacy</Link><Link href="/shipping">Terms</Link><span>Pakistan · USD $</span></div></div>
+      <nav aria-label="Contact">
+        <span>Contact</span>
+        <Link href="/contact">Client services</Link>
+        <Link href="mailto:hello@driptide.com">hello@driptide.com</Link>
+      </nav>
+      <nav aria-label="Explore">
+        <span>Explore</span>
+        <Link href="/products">Shop all</Link>
+        <Link href="/collections">Collections</Link>
+        <Link href="/story">Our story</Link>
+      </nav>
+      <nav aria-label="Social">
+        <span>Social</span>
+        <Link href="https://instagram.com">Instagram ↗</Link>
+        <Link href="https://facebook.com">Facebook ↗</Link>
+      </nav>
+      <nav aria-label="Information">
+        <span>Information</span>
+        <Link href="/shipping">Shipping &amp; returns</Link>
+        <Link href="/faq">Frequently asked questions</Link>
+      </nav>
+      <small>© 2026 Driptide. All rights reserved.</small>
     </footer>
   );
 }

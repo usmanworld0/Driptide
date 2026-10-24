@@ -10,19 +10,17 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
   const port = configService.get<number>('port') || 4000;
-  const allowedOrigins = configService.get<string[]>('cors.allowedOrigins') || [
+  const allowedOrigins = (configService.get<string[]>('cors.allowedOrigins') || [
     'http://localhost:3000',
     'http://localhost:3001',
-  ];
+  ]).map((origin) => origin.trim()).filter(Boolean);
 
   app.enableCors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, server-to-server) or allowed origins
-      if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://localhost:')) {
-        callback(null, true);
-      } else {
-        callback(null, true); // Dev permissive
-      }
+      // Allow server-to-server requests without an Origin header.
+      const isLocalDevelopmentOrigin =
+        process.env.NODE_ENV !== 'production' && /^http:\/\/localhost:\d+$/.test(origin || '');
+      callback(null, !origin || allowedOrigins.includes(origin) || isLocalDevelopmentOrigin);
     },
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',

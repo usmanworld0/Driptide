@@ -6,6 +6,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { CartDrawer } from '@/components/layout/CartDrawer';
 import { AnnouncementBar } from '@/components/layout/AnnouncementBar';
+import { SmoothScroll } from '@/components/layout/SmoothScroll';
 
 export const metadata: Metadata = {
   title: 'Driptide — Fashion Store | E-commerce UI Kit',
@@ -22,6 +23,7 @@ export default function RootLayout({
     <html lang="en" className="h-full antialiased selection:bg-[#262626] selection:text-white">
       <body className="min-h-full flex flex-col bg-white text-black">
         <CartProvider>
+          <SmoothScroll />
           <Suspense fallback={<div className="h-16 sm:h-20 bg-[#F3F3F3]" />}>
             <AnnouncementBar />
             <Header />

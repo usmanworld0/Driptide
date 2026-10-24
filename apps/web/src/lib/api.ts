@@ -8,6 +8,8 @@ import {
   OrderStatus,
   AdjustInventoryInput,
   UpdateProductInput,
+  CreateProductInput,
+  Coupon,
 } from '@driptide/contracts';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
@@ -138,6 +140,12 @@ export const api = {
     });
   },
 
+  async getAdminProducts(token: string = 'admin-dev-token'): Promise<Product[]> {
+    return fetcher<Product[]>('/admin/products', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+
   async fulfillOrder(
     orderId: string,
     courier: string,
@@ -184,6 +192,44 @@ export const api = {
       method: 'PUT',
       headers: { Authorization: `Bearer ${token}` },
       body: JSON.stringify(input),
+    });
+  },
+
+  async createProduct(
+    input: CreateProductInput,
+    token: string = 'admin-dev-token',
+  ): Promise<Product> {
+    return fetcher<Product>('/admin/products', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify(input),
+    });
+  },
+
+  async getAdminCoupons(token: string = 'admin-dev-token'): Promise<Coupon[]> {
+    return fetcher<Coupon[]>('/admin/coupons', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+
+  async createCoupon(
+    input: Partial<Coupon>,
+    token: string = 'admin-dev-token',
+  ): Promise<Coupon> {
+    return fetcher<Coupon>('/admin/coupons', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify(input),
+    });
+  },
+
+  async toggleCoupon(
+    id: string,
+    token: string = 'admin-dev-token',
+  ): Promise<Coupon> {
+    return fetcher<Coupon>(`/admin/coupons/${id}/toggle`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${token}` },
     });
   },
 };
